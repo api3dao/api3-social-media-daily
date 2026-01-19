@@ -1,0 +1,11 @@
+# Logs
+logs
+*.log
+
+
+config.json
+node_modules/
+
+
+**/.DS_Store
+**/ec2-instance.*

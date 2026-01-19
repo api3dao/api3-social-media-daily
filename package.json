@@ -1,0 +1,41 @@
+{
+  "name": "npm-fastify",
+  "version": "1.0.0",
+  "description": "This project was bootstrapped with Fastify-CLI.",
+  "main": "app.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "node --test test/**/*.test.js",
+    "lint": "pnpm prettier:check && eslint . --ext .js,ts",
+    "prettier": "prettier --write \"./**/*.{js,ts,md,json,json.example}\"",
+    "prettier:check": "prettier --check \"./**/*.{js,ts,md,json,json.example}\"",
+    "---prod---": "",
+    "start-prod": "NODE_ENV=production node --trace-warnings app.js",
+    "start-prod-pm2": "NODE_ENV=production pm2 start app.js --name daily --log-date-format 'MM-DD HH:mm:ss ZZ'",
+    "stop-prod-pm2": "NODE_ENV=production pm2 stop daily",
+    "restart-prod-pm2": "NODE_ENV=production pm2 restart daily --log-date-format 'MMM-DD HH:mm:ss ZZ'",
+    "delete-prod-pm2": "NODE_ENV=production pm2 delete daily",
+    "---dev---": "",
+    "start-dev": "NODE_ENV=development node --trace-warnings app.js",
+    "start-dev-pm2": "NODE_ENV=development pm2 start app.js --name daily-dev --log-date-format 'MM-DD HH:mm:ss ZZ'",
+    "stop-dev-pm2": "NODE_ENV=development pm2 stop daily-dev",
+    "restart-dev-pm2": "NODE_ENV=development pm2 restart daily-dev --log-date-format 'MMM-DD HH:mm:ss ZZ'",
+    "delete-dev-pm2": "NODE_ENV=development pm2 delete daily-dev"
+  },
+  "keywords": [],
+  "author": "Api3",
+  "license": "ISC",
+  "dependencies": {
+    "@slack/web-api": "^7.13.0",
+    "cron": "^4.4.0",
+    "dayjs": "^1.11.19",
+    "node-cron": "^4.2.1",
+    "node-schedule": "^2.1.1"
+  },
+  "devDependencies": {
+    "eslint": "^9.39.2",
+    "prettier": "^3.8.0"
+  }
+}
