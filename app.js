@@ -21,9 +21,9 @@ console.log("----------------------------------");
  */
 const job = new CronJob(
   "0 5 0 * * 0-6", // cronTime
-  function () {
+  async function () {
     console.log("... Midnight start");
-    run();
+    await run();
   }, // onTick
   null, // onComplete
   true, // start

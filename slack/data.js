@@ -15,16 +15,20 @@ let DATA = [];
  * @returns
  */
 async function getData() {
-  DATA = [];
-  for (const query of QUERIES) {
-    await runQuery(query);
+  try {
+    DATA = [];
+    for (const query of QUERIES) {
+      await runQuery(query);
+    }
+    console.log("\n>>> DATA.length", DATA.length);
+    // Save DATA only for development
+    if (process.env.NODE_ENV === "development") {
+      fs.writeFileSync("../../tweets.json", JSON.stringify(DATA, null, 5));
+    }
+    return DATA;
+  } catch (error) {
+    throw error;
   }
-  console.log("\n>>> DATA.length", DATA.length);
-  // Save DATA only for development
-  if (process.env.NODE_ENV === "development") {
-    fs.writeFileSync("../../tweets.json", JSON.stringify(DATA, null, 5));
-  }
-  return DATA;
 }
 
 /**
@@ -57,10 +61,18 @@ async function runQuery(queryStr, next_cursor = undefined) {
 
     // Tweets into DATA array
     const responseJson = await response.json();
-    console.log(">>> cnt:", responseJson.tweets.length);
-    for (const tweet of responseJson.tweets) {
-      tweet._timeUtc = `${tweet.createdAt.split(" ")[3]} (UTC)`;
-      DATA.push(tweet);
+    // The twitterapi.io API sucks for errors. Basically you have to check if the tweets key exists.
+    // No tweets key means an error
+    // The error can be in different root keys, detail, message, etc.
+    if (!responseJson.tweets) {
+      const e = new Error(JSON.stringify(responseJson, null, 3));
+      throw new Error(e);
+    } else {
+      console.log(">>> Tweets cnt:", responseJson.tweets.length);
+      for (const tweet of responseJson.tweets) {
+        tweet._timeUtc = `${tweet.createdAt.split(" ")[3]} (UTC)`;
+        DATA.push(tweet);
+      }
     }
 
     // If there where 20 messages (API limit) for the query get the next 20.
@@ -78,7 +90,7 @@ async function runQuery(queryStr, next_cursor = undefined) {
 
     return DATA;
   } catch (error) {
-    console.error(error);
+    throw error;
   }
 }
 
