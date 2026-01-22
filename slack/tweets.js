@@ -49,8 +49,7 @@ async function postTweets() {
     const threadTsRoot = result.ts;
 
     // Spin through the data and post to Slack in the thread of the root message
-    let cnt = 0;
-    for (const tweet of data) {
+    for (const [index, tweet] of data.entries()) {
       let blocks = [];
       /*console.log(
         tweet.author.userName,
@@ -58,25 +57,33 @@ async function postTweets() {
         tweet.createdAt,
         tweet._timeUtc,
       );*/
-      cnt++;
+
+      if (index >= 100) {
+        console.log(
+          ">>> Reached message limit of 100 tweets. Stopping further posts. <<<",
+        );
+        await terminateReportMsg(channelId, threadTsRoot);
+        break;
+      }
+
       // Get blocks
       blocks.push(DIVIDER);
       blocks.push({
-        type: "section",
+        type: "header",
         text: {
-          type: "mrkdwn",
-          text: `----- *(${cnt}) ${tweet.author.name}* -----`,
+          type: "plain_text",
+          text: `(${index + 1}) ${tweet.author.name}`,
         },
       });
-      blocks.push(await getBannerBlock(cnt, tweet));
+      blocks.push(await getBannerBlock(tweet));
       blocks.push(await getTextBlock(tweet));
       if (tweet.quoted_tweet) {
         blocks.push(await getQuotedBlock(tweet.quoted_tweet));
-        blocks.push(await getTextBlock(tweet.quoted_tweet));
+        blocks.push(await getRichTextBlock(tweet.quoted_tweet));
       }
       if (tweet.retweeted_tweet) {
         blocks.push(await getRetweetedBlock(tweet.retweeted_tweet));
-        blocks.push(await getTextBlock(tweet.retweeted_tweet));
+        blocks.push(await getRichTextBlock(tweet.retweeted_tweet));
       }
 
       // Send message to Slack in the thread of the root message
@@ -118,7 +125,7 @@ async function postTweets() {
  * @param {*} tweet
  * @returns
  */
-async function getBannerBlock(cnt, tweet) {
+async function getBannerBlock(tweet) {
   // Link to the tweet
   const link = `<${tweet.url}| View on X>`;
 
@@ -132,11 +139,23 @@ async function getBannerBlock(cnt, tweet) {
       },
       {
         type: "mrkdwn",
-        text: `*@${tweet.author.userName} - _${tweet._timeUtc}_ - ${link}* `,
+        text: `*@${tweet.author.userName} - _${tweet._timeUtc}_*\n*${link}* ${tweet.isReply ? `}, // - (Reply to @${tweet.inReplyToUsername})` : ""}`,
       },
     ],
   };
 
+  return block;
+}
+
+async function getTextBlock(tweet) {
+  // Block with the tweet data
+  const block = {
+    type: "section",
+    text: {
+      type: "mrkdwn",
+      text: `${tweet.text}`,
+    },
+  };
   return block;
 }
 
@@ -145,7 +164,7 @@ async function getBannerBlock(cnt, tweet) {
  * @param {*} tweet
  * @returns
  */
-async function getTextBlock(tweet) {
+async function getRichTextBlock(tweet) {
   // Block with the tweet data
   const block = {
     type: "rich_text",
@@ -161,12 +180,6 @@ async function getTextBlock(tweet) {
 }
 
 async function getQuotedBlock(tweet) {
-  // Link to the tweet
-  const link = `<${tweet.url}| View on Twitter/X>`;
-
-  // Need only the time from createdAt
-  const createdTime = tweet.createdAt.split(" ");
-
   const block = {
     type: "context",
     elements: [
@@ -190,12 +203,6 @@ async function getQuotedBlock(tweet) {
 }
 
 async function getRetweetedBlock(tweet) {
-  // Link to the tweet
-  const link = `<${tweet.url}| View on Twitter/X>`;
-
-  // Need only the time from createdAt
-  const createdTime = tweet.createdAt.split(" ");
-
   const block = {
     type: "context",
     elements: [
@@ -216,6 +223,37 @@ async function getRetweetedBlock(tweet) {
     ],
   };
   return block;
+}
+
+async function terminateReportMsg(channelId, threadTsRoot) {
+  console.log(
+    ">>> Report terminated after reaching message limit of 100 posts. <<<",
+  );
+  // Send message to Slack in the thread of the root message
+  await web.chat.postMessage({
+    channel: channelId,
+    thread_ts: threadTsRoot,
+    text: "Post limit reached.",
+    unfurl_links: false,
+    unfurl_media: false,
+    blocks: [
+      DIVIDER,
+      {
+        type: "header",
+        text: {
+          type: "plain_text",
+          text: `Report Limit Reached`,
+        },
+      },
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `The daily summary report was stopped after reaching the message limit of 100 posts.`,
+        },
+      },
+    ],
+  });
 }
 
 async function sleep(ms) {

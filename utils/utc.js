@@ -46,8 +46,9 @@ function getCurrentDttmUtcHumanReadable() {
 }
 
 async function getXQueryRuntimeDttm() {
+  const minus = process.env.NODE_ENV === "development" ? 0 : -1;
   const a = dayjs();
-  const b = a.add(-1, "day");
+  const b = a.add(minus, "day");
   return b.format("dddd MMMM D, YYYY (UTC)");
 }
 
@@ -56,8 +57,9 @@ async function getXQueryRuntimeDttm() {
  * "2026-01-09_00:00:00_UTC"
  */
 async function getXQueryStartDttm() {
+  const minus = process.env.NODE_ENV === "development" ? 0 : -1;
   const a = dayjs();
-  const b = a.add(-1, "day");
+  const b = a.add(minus, "day");
   return b.format("YYYY-MM-DD_00:00:00_UTC");
 }
 
@@ -66,8 +68,9 @@ async function getXQueryStartDttm() {
  * "2026-01-14_23:59:59_UTC"
  */
 async function getXQueryEndDttm() {
+  const minus = process.env.NODE_ENV === "development" ? 0 : -1;
   const a = dayjs();
-  const b = a.add(-1, "day");
+  const b = a.add(minus, "day");
   return b.format("YYYY-MM-DD_23:59:59_UTC");
 }
 
