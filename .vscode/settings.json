@@ -1,6 +1,6 @@
 {
   "cSpell.ignoreWords": [],
-  "cSpell.words": ["dttm", "nativeretweets"],
+  "cSpell.words": ["dttm", "nativeretweets", "twitterapi"],
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": true,
   "search.useIgnoreFiles": false
