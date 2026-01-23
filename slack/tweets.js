@@ -1,4 +1,4 @@
-const { WebClient, ErrorCode } = require("@slack/web-api");
+const { WebClient } = require("@slack/web-api");
 const { getXQueryRuntimeDttm } = require("../utils/utc");
 
 const { getData } = require("./data");
@@ -68,25 +68,19 @@ async function postTweets() {
 
       // Get blocks
       blocks.push(DIVIDER);
-      blocks.push({
-        type: "header",
-        text: {
-          type: "plain_text",
-          text: `(${index + 1}) ${tweet.author.name}`,
-        },
-      });
+      blocks.push(await getHeaderBlock(index, tweet));
       blocks.push(await getBannerBlock(tweet));
       blocks.push(await getTextBlock(tweet));
       if (tweet.quoted_tweet) {
-        blocks.push(await getQuotedBlock(tweet.quoted_tweet));
+        blocks.push(await getBannerQuotedBlock(tweet.quoted_tweet));
         blocks.push(await getRichTextBlock(tweet.quoted_tweet));
       }
       if (tweet.retweeted_tweet) {
-        blocks.push(await getRetweetedBlock(tweet.retweeted_tweet));
+        blocks.push(await getBannerRetweetedBlock(tweet.retweeted_tweet));
         blocks.push(await getRichTextBlock(tweet.retweeted_tweet));
       }
 
-      // Send message to Slack in the thread of the root message
+      // Send message to Slack into the thread of the root message
       const result = await web.chat.postMessage({
         channel: channelId,
         thread_ts: threadTsRoot,
@@ -121,6 +115,27 @@ async function postTweets() {
 }
 
 /**
+ * The top most label header block with author name
+ * @param {*} index
+ * @param {*} tweet
+ * @returns
+ */
+async function getHeaderBlock(index, tweet) {
+  // Link to the tweet
+  const link = `<${tweet.url}| View on X>`;
+
+  const block = {
+    type: "header",
+    text: {
+      type: "plain_text",
+      text: `(${index + 1}) ${tweet.author.name}`,
+    },
+  };
+
+  return block;
+}
+
+/**
  * Banner block for tweets and quoted tweets
  * @param {*} tweet
  * @returns
@@ -147,6 +162,11 @@ async function getBannerBlock(tweet) {
   return block;
 }
 
+/**
+ * Creates text block for the tweet's main body
+ * @param {*} tweet
+ * @returns
+ */
 async function getTextBlock(tweet) {
   // Block with the tweet data
   const block = {
@@ -160,7 +180,7 @@ async function getTextBlock(tweet) {
 }
 
 /**
- *
+ * Create rich text block for the tweet's quoted or retweeted tweet
  * @param {*} tweet
  * @returns
  */
@@ -179,7 +199,12 @@ async function getRichTextBlock(tweet) {
   return block;
 }
 
-async function getQuotedBlock(tweet) {
+/**
+ * The banner block for quoted tweets, image and name/username
+ * @param {*} tweet
+ * @returns
+ */
+async function getBannerQuotedBlock(tweet) {
   const block = {
     type: "context",
     elements: [
@@ -202,7 +227,12 @@ async function getQuotedBlock(tweet) {
   return block;
 }
 
-async function getRetweetedBlock(tweet) {
+/**
+ * The banner block for retweeted tweets, image and name/username
+ * @param {*} tweet
+ * @returns
+ */
+async function getBannerRetweetedBlock(tweet) {
   const block = {
     type: "context",
     elements: [
@@ -225,6 +255,13 @@ async function getRetweetedBlock(tweet) {
   return block;
 }
 
+/**
+ * The daily report termination message after reaching 100 posts
+ * Prevents Slack message overloads and potential rate limiting
+ * Also prevents report runaway
+ * @param {*} channelId
+ * @param {*} threadTsRoot
+ */
 async function terminateReportMsg(channelId, threadTsRoot) {
   console.log(
     ">>> Report terminated after reaching message limit of 100 posts. <<<",
@@ -256,6 +293,11 @@ async function terminateReportMsg(channelId, threadTsRoot) {
   });
 }
 
+/**
+ * Pause between Slack posts to avoid rate limiting
+ * @param {*} ms
+ * @returns
+ */
 async function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
