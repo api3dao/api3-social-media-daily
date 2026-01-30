@@ -29,13 +29,13 @@ async function postTweets() {
     // First post the root Slack message announcing the daily report
     const result = await web.chat.postMessage({
       channel: channelId,
-      text: `Summary report for: ${await getXQueryRuntimeDttm()}`, // Will be in Slack notifications
+      text: `X report for: ${await getXQueryRuntimeDttm()}`, // Will be in Slack notifications
       blocks: [
         {
           type: "section",
           text: {
             type: "mrkdwn",
-            text: `_${await getXQueryRuntimeDttm()}_`,
+            text: `*X* - _${await getXQueryRuntimeDttm()}_`,
           },
         },
       ],
