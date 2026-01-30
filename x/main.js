@@ -1,4 +1,3 @@
-//const { WebClient, ErrorCode } = require("@slack/web-api");
 const { getXQueryRuntimeDttm } = require("../utils/utc");
 const { postTweets } = require("./tweets");
 
