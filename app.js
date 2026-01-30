@@ -1,7 +1,7 @@
 "use strict";
 
 const { CronJob } = require("cron");
-const { run } = require("./slack/main");
+const x = require("./x/main");
 const { getCurrentDttmUtcHumanReadable } = require("./utils/utc");
 const fs = require("fs");
 const CONFIG = JSON.parse(fs.readFileSync("./config.json", "utf-8"))[
@@ -23,18 +23,21 @@ const job = new CronJob(
   "0 5 0 * * 0-6", // cronTime
   async function () {
     console.log("... Midnight start");
-    await run();
+    await x.run();
   }, // onTick
   null, // onComplete
   true, // start
   "UTC", // timeZone
 );
 
+/**
+ * Run the X process only on dev during startup
+ */
 async function runDevStartup() {
-  run();
+  x.run();
 }
 
-// Run the Slack process in dev on startup
+// Run the X process in dev on startup
 if (process.env.NODE_ENV === "development") {
   runDevStartup();
 }

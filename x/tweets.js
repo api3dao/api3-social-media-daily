@@ -70,7 +70,10 @@ async function postTweets() {
       blocks.push(DIVIDER);
       blocks.push(await getHeaderBlock(index, tweet));
       blocks.push(await getBannerBlock(tweet));
-      blocks.push(await getTextBlock(tweet));
+      if (!tweet.retweeted_tweet) {
+        blocks.push(await getBannerTweetBlock(tweet));
+        blocks.push(await getTextBlock(tweet));
+      }
       if (tweet.quoted_tweet) {
         blocks.push(await getBannerQuotedBlock(tweet.quoted_tweet));
         blocks.push(await getRichTextBlock(tweet.quoted_tweet));
@@ -169,12 +172,21 @@ async function getBannerBlock(tweet) {
  */
 async function getTextBlock(tweet) {
   // Block with the tweet data
-  const block = {
+  /*const block = {
     type: "section",
     text: {
       type: "mrkdwn",
-      text: `${tweet.text}`,
+      text: `*|* Tweet:\n${tweet.text}`,
     },
+  };*/
+  const block = {
+    type: "rich_text",
+    elements: [
+      {
+        type: "rich_text_preformatted",
+        elements: [{ type: "text", text: `${tweet.text}` }],
+      },
+    ],
   };
   return block;
 }
@@ -196,6 +208,19 @@ async function getRichTextBlock(tweet) {
     ],
   };
 
+  return block;
+}
+
+async function getBannerTweetBlock(tweet) {
+  const block = {
+    type: "context",
+    elements: [
+      {
+        type: "mrkdwn",
+        text: "*|* Tweeted: ",
+      },
+    ],
+  };
   return block;
 }
 
@@ -238,7 +263,7 @@ async function getBannerRetweetedBlock(tweet) {
     elements: [
       {
         type: "mrkdwn",
-        text: "*|* Retweeted: ",
+        text: "*|* Reposted: ",
       },
       {
         type: "image",

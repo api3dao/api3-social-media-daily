@@ -5,7 +5,7 @@ const CONFIG = JSON.parse(fs.readFileSync("./config.json", "utf-8"))[
 ];
 
 // The queries to execute
-const QUERIES = CONFIG.slack.queries;
+const QUERIES = CONFIG.x.queries;
 
 // The tweet data
 let DATA = [];
@@ -53,7 +53,7 @@ async function runQuery(queryStr, next_cursor = undefined) {
       {
         method: "GET",
         headers: {
-          "X-API-Key": CONFIG.slack.twitter_api_io_key,
+          "X-API-Key": CONFIG.x.twitter_api_io_key,
           "Content-Type": "application/json",
         },
       },
