@@ -5,7 +5,7 @@ const { postTweets } = require("./tweets");
  * Called by the cron job from app.js once a day
  */
 async function run() {
-  console.log("----- Running the X report -----");
+  console.log("\n----- Running the X report -----");
   try {
     console.log(">>>", await getXQueryRuntimeDttm());
     await postTweets();

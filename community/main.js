@@ -5,7 +5,7 @@ const { postMessages } = require("./community");
  * Called by the cron job from app.js once a day
  */
 async function run() {
-  console.log("----- Running the community report -----");
+  console.log("\n----- Running the community report -----");
   try {
     console.log(">>>", await getXQueryRuntimeDttm());
     await postMessages();
