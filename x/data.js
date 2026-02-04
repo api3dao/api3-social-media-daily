@@ -39,7 +39,7 @@ async function getData() {
  * @param {*} query
  */
 async function runQuery(queryStr, next_cursor = undefined) {
-  logger.info("\n----- getData() -----");
+  logger.info("----- getData() -----");
 
   try {
     // Set the query (filters)
