@@ -39,18 +39,18 @@ async function getData() {
  * @param {*} query
  */
 async function runQuery(queryStr, next_cursor = undefined) {
-  logger.info("----- getData() -----");
+  logger.info("----- getData()");
 
   try {
     // Set the query (filters)
     let query = `&query=${queryStr} since:${await getXQueryStartDttm()} until:${await getXQueryEndDttm()}`;
 
     // Pagination
-    logger.info(">>> next_cursor:", next_cursor);
+    logger.info(`>>> next_cursor: ${next_cursor}`);
     if (next_cursor !== undefined) {
       query += `&cursor=${next_cursor}`;
     }
-    logger.info(">>> Query str:", query);
+    logger.info(`>>> Query str: ${query}`);
     const response = await fetch(
       `https://api.twitterapi.io/twitter/tweet/advanced_search?queryType=Latest${query}`,
       {
@@ -71,7 +71,7 @@ async function runQuery(queryStr, next_cursor = undefined) {
       const e = new Error(JSON.stringify(responseJson, null, 3));
       throw new Error(e);
     } else {
-      logger.info("Tweets cnt:", responseJson.tweets.length);
+      logger.info(`Tweets cnt: ${responseJson.tweets.length}`);
       for (const tweet of responseJson.tweets) {
         tweet._timeUtc = `${tweet.createdAt.split(" ")[3]} (UTC)`;
         DATA.push(tweet);
