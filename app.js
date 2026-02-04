@@ -8,13 +8,21 @@ const fs = require("fs");
 const CONFIG = JSON.parse(fs.readFileSync("./config.json", "utf-8"))[
   process.env.NODE_ENV
 ];
+const { sendPushNotification } = require("./utils/pushover");
+const logger = require("./utils/logger");
 
 // Startup output
-console.log("----------------------------------");
-console.log(`>>> NODE_ENV: ${process.env.NODE_ENV}`);
-// console.log(`>>> CONFIG: ${JSON.stringify(CONFIG, null, 3)}`);
-console.log(">>> Startup:", getCurrentDttmUtcHumanReadable());
-console.log("----------------------------------");
+async function output() {
+  logger.info("----------------------------------");
+  logger.info(`>>> NODE_ENV: ${process.env.NODE_ENV}`);
+  logger.info(">>> Startup:", getCurrentDttmUtcHumanReadable());
+  logger.info("----------------------------------");
+  await sendPushNotification(
+    "STARTUP",
+    `App starting in ${process.env.NODE_ENV} mode`,
+  );
+}
+output();
 
 /**
  * Start the cron process to run once daily
@@ -23,7 +31,7 @@ console.log("----------------------------------");
 const job = new CronJob(
   "0 5 0 * * 0-6", // cronTime
   async function () {
-    console.log("... Midnight start");
+    logger.info("... Midnight start");
     await x.run();
     await community.run();
   }, // onTick
@@ -40,7 +48,9 @@ async function runDevStartup() {
   await community.run();
 }
 
-// Run the X process in dev on startup
+// Run the X and Community processes for dev on startup
 if (process.env.NODE_ENV === "development") {
-  runDevStartup();
+  setTimeout(() => {
+    runDevStartup();
+  }, 2000);
 }

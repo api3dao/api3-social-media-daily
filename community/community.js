@@ -3,11 +3,12 @@ const {
   getDateUtcHumanReadable,
   getXQueryRuntimeDttm,
 } = require("../utils/utc");
-const dayjs = require("dayjs");
 const fs = require("fs");
 const CONFIG = JSON.parse(fs.readFileSync("./config.json", "utf-8"))[
   process.env.NODE_ENV
 ];
+const logger = require("../utils/logger");
+const { sendPushNotification } = require("../utils/pushover");
 
 // Initialize Slack web client
 const web = new WebClient(CONFIG.slack.auth_token);
@@ -25,22 +26,20 @@ async function postMessages() {
     // Telegram data
     try {
       telegramData = fs.readdirSync(`../file-db/telegram/_db_${d}`);
-      console.log(`Telegram messages: ${telegramData.length}`);
+      logger.info(`Telegram messages: ${telegramData.length}`);
     } catch (error) {
-      console.error(
-        `Missing Telegram data directory: ../file-db/telegram/_db_${d}`,
-      );
+      // Minor error, just log and continue, no messages that day
+      logger.info(`Missing: ../file-db/telegram/_db_${d}`);
       telegramData = [];
     }
 
     // Discord data
     try {
       discordData = fs.readdirSync(`../file-db/discord/_db_${d}`);
-      console.log(`Discord messages: ${discordData.length}`);
+      logger.info(`Discord messages: ${discordData.length}`);
     } catch (error) {
-      console.error(
-        `Missing Discord data directory: ../file-db/discord/_db_${d}`,
-      );
+      // Minor error, just log and continue, no messages that day
+      logger.info(`Missing: ../file-db/discord/_db_${d}`);
       discordData = [];
     }
 
@@ -92,10 +91,16 @@ async function postMessages() {
         thread_ts: result.ts,
         blocks: blocks,
       });
-      //console.log(msg);
     }
+    // Send message to pushover for monitoring
+    sendPushNotification(
+      "COMMUNITY RUN DONE",
+      `Community messages posted: ${messages.length}`,
+    );
   } catch (error) {
-    console.error(error);
+    error._location = "community/community.js -> postMessages";
+    error._message = error.toString();
+    logger.error(error);
   }
 }
 

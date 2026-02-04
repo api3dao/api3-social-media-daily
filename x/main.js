@@ -1,16 +1,19 @@
 const { getXQueryRuntimeDttm } = require("../utils/utc");
 const { postTweets } = require("./tweets");
+const logger = require("../utils/logger");
 
 /**
  * Called by the cron job from app.js once a day
  */
 async function run() {
-  console.log("\n----- Running the X report -----");
+  logger.info("----- Running the X report -----");
   try {
-    console.log(">>>", await getXQueryRuntimeDttm());
+    logger.info(await getXQueryRuntimeDttm());
     await postTweets();
   } catch (error) {
-    console.error(error);
+    error._location = "x/main.js -> run";
+    error._message = error.toString();
+    logger.error(error);
   }
 }
 
