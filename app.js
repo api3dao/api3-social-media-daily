@@ -2,6 +2,7 @@
 
 const { CronJob } = require("cron");
 const x = require("./x/main");
+const community = require("./community/main");
 const { getCurrentDttmUtcHumanReadable } = require("./utils/utc");
 const fs = require("fs");
 const CONFIG = JSON.parse(fs.readFileSync("./config.json", "utf-8"))[
@@ -24,6 +25,7 @@ const job = new CronJob(
   async function () {
     console.log("... Midnight start");
     await x.run();
+    await community.run();
   }, // onTick
   null, // onComplete
   true, // start
@@ -34,7 +36,8 @@ const job = new CronJob(
  * Run the X process only on dev during startup
  */
 async function runDevStartup() {
-  x.run();
+  await x.run();
+  await community.run();
 }
 
 // Run the X process in dev on startup
