@@ -19,27 +19,30 @@ async function postMessages() {
     // Get the data from file-db/telegram, because it is 00:05 UTC now, we need yesterday's data
     const minus = process.env.NODE_ENV === "development" ? 0 : -1;
     const d = getDateUtcHumanReadable(minus);
-    console.log(d);
     let telegramData = [];
     let discordData = [];
 
     // Telegram data
     try {
       telegramData = fs.readdirSync(`../file-db/telegram/_db_${d}`);
+      console.log(`Telegram messages: ${telegramData.length}`);
     } catch (error) {
-      console.error("Missing Telegram data directory.");
+      console.error(
+        `Missing Telegram data directory: ../file-db/telegram/_db_${d}`,
+      );
       telegramData = [];
     }
 
     // Discord data
     try {
       discordData = fs.readdirSync(`../file-db/discord/_db_${d}`);
+      console.log(`Discord messages: ${discordData.length}`);
     } catch (error) {
-      console.error("Missing Discord data directory.");
+      console.error(
+        `Missing Discord data directory: ../file-db/discord/_db_${d}`,
+      );
       discordData = [];
     }
-    console.log("t:", telegramData);
-    console.log("d:", discordData);
 
     // First post the root Slack message announcing the daily report
     const result = await web.chat.postMessage({
@@ -71,7 +74,6 @@ async function postMessages() {
       messages.push(JSON.parse(msg));
     }
     messages.sort((a, b) => b.date - a.date);
-    console.log(">>> messages:", messages);
 
     // Spin through the messages and post to Slack in the thread of the root message
     for (const [index, msg] of messages.entries()) {
