@@ -6,6 +6,7 @@ const fs = require("fs");
 const CONFIG = JSON.parse(fs.readFileSync("./config.json", "utf-8"))[
   process.env.NODE_ENV
 ];
+const logger = require("../utils/logger");
 
 const DIVIDER = {
   type: "divider",
@@ -44,23 +45,17 @@ async function postTweets() {
     // If we got this far then twitterapi.io did not fail
     retryCnt = 0;
 
-    console.log("Channel root message ID:", result.ts);
+    logger.info("Channel root message ID:", result.ts);
     // The Slack root thread timestamp which is used to post all other messages in its thread
     const threadTsRoot = result.ts;
 
     // Spin through the data and post to Slack in the thread of the root message
     for (const [index, tweet] of data.entries()) {
       let blocks = [];
-      /*console.log(
-        tweet.author.userName,
-        tweet.id,
-        tweet.createdAt,
-        tweet._timeUtc,
-      );*/
 
       if (index >= 100) {
-        console.log(
-          ">>> Reached message limit of 100 tweets. Stopping further posts. <<<",
+        logger.info(
+          "Reached message limit of 100 tweets. Stopping further posts.",
         );
         await terminateReportMsg(channelId, threadTsRoot);
         break;
@@ -96,24 +91,21 @@ async function postTweets() {
       await sleep(500); // Pause for 1/2 second, Slack rate limit
     }
   } catch (error) {
-    console.error("\n----- Error in postTweets() -----");
-    console.error(">>>", "Most likely cause: twitterapi.io failure");
-    console.error(error);
+    error._location = "x/tweets.js -> postTweets";
+    error._message = error.toString();
+    logger.error(error);
 
     if (retryCnt >= 24) {
-      console.error(
-        `>>> Max retry attempts (${retryCnt}) reached. Exiting. <<<`,
-      );
+      logger.info(`Max retry attempts (${retryCnt}) reached. Exiting. <<<`);
       retryCnt = 0;
     } else {
-      console.log(`>>> Retrying postTweets() - After attempt #${retryCnt} <<<`);
+      logger.info(`Retrying postTweets() - After attempt #${retryCnt} <<<`);
       // TODO: set timer to retry again later
       setTimeout(async () => {
         retryCnt++;
         await postTweets();
       }, 900000); // 15 minutes
     }
-    console.error("----- End error -----");
   }
 }
 
@@ -288,9 +280,7 @@ async function getBannerRetweetedBlock(tweet) {
  * @param {*} threadTsRoot
  */
 async function terminateReportMsg(channelId, threadTsRoot) {
-  console.log(
-    ">>> Report terminated after reaching message limit of 100 posts. <<<",
-  );
+  logger.info("Report terminated after reaching message limit of 100 posts.");
   // Send message to Slack in the thread of the root message
   await web.chat.postMessage({
     channel: channelId,
