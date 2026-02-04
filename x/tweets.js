@@ -35,7 +35,7 @@ async function postTweets() {
           type: "section",
           text: {
             type: "mrkdwn",
-            text: `*X* - _${await getXQueryRuntimeDttm()}_`,
+            text: `*X/Twitter*\n_${await getXQueryRuntimeDttm()}_`,
           },
         },
       ],
