@@ -12,7 +12,7 @@ const CONFIG = JSON.parse(fs.readFileSync("./config.json", "utf-8"))[
 // Startup output
 console.log("----------------------------------");
 console.log(`>>> NODE_ENV: ${process.env.NODE_ENV}`);
-console.log(`>>> CONFIG: ${JSON.stringify(CONFIG, null, 3)}`);
+// console.log(`>>> CONFIG: ${JSON.stringify(CONFIG, null, 3)}`);
 console.log(">>> Startup:", getCurrentDttmUtcHumanReadable());
 console.log("----------------------------------");
 
