@@ -12,7 +12,7 @@ const fs = require("fs");
 const CONFIG = JSON.parse(fs.readFileSync("./config.json", "utf-8"))[
   "pushover"
 ];
-let PAUSE = false;
+
 const TOKENS = JSON.parse(fs.readFileSync("./config.json", "utf-8"))[
   "pushover"
 ][process.env.NODE_ENV];
