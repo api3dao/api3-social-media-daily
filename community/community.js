@@ -63,7 +63,6 @@ async function postMessages() {
         if (msg._text.length > 15) messages.push(msg);
       }
     } catch (error) {
-      console.log(error);
       // Minor error, just log and continue, no messages that day
       logger.info(`Missing: ../file-db/telegram/_db_${d}`);
     }
@@ -84,7 +83,6 @@ async function postMessages() {
         if (msg._text.length > 15) messages.push(msg);
       }
     } catch (error) {
-      console.log(error);
       // Minor error, just log and continue, no messages that day
       logger.info(`Missing: ../file-db/discord/_db_${d}`);
     }
