@@ -40,10 +40,6 @@ async function postMessages() {
     const minus = process.env.NODE_ENV === "development" ? 0 : -1;
     const d = getDateUtcHumanReadable(minus);
 
-    // Told hold file names from the two communities
-    //let telegramData = [];
-    //let discordData = [];
-
     // Hold messages from communities
     let messages = [];
 
@@ -137,10 +133,9 @@ async function getBannerBlock(msg) {
   // Logo, Telegram or Discord
 
   let logo =
-    "https://archive.org/download/github.com-discord-discord-open-source_-_2024-06-20_00-58-41/cover.jpg";
+    "https://www.freepnglogos.com/uploads/discord-logo-png/discord-logo-logodownload-download-logotipos-1.png";
   if (msg._community === "telegram") {
-    logo =
-      "https://archive.org/download/png-transparent-blue-and-white-icon-illustration-telegram-logo-computer-icons-sc/png-transparent-blue-and-white-icon-illustration-telegram-logo-computer-icons-scalable-graphics-telegram-miscellaneous-blue-angle.png";
+    logo = "https://www.freepnglogos.com/uploads/telegram-logo-10.png";
   }
 
   // Get the message time in UTC
@@ -174,6 +169,9 @@ async function getBannerBlock(msg) {
 }
 
 async function getTextBlock(msg) {
+  // Discord has a channel key
+  const discordChannel = msg._channel ? msg._channel + ": " : "";
+
   const block = {
     type: "rich_text",
     elements: [
@@ -182,7 +180,7 @@ async function getTextBlock(msg) {
         elements: [
           {
             type: "text",
-            text: msg._text,
+            text: discordChannel + msg._text,
           },
         ],
       },
