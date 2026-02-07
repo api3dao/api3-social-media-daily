@@ -92,7 +92,7 @@ async function postMessages() {
     }
 
     // Sort the messages by _date
-    messages.sort((a, b) => b._date - a._date);
+    messages.sort((a, b) => a._date - b._date);
 
     // Spin through the messages and post to Slack in the thread of the root message
     for (const [index, msg] of messages.entries()) {
