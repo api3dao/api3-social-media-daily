@@ -6,9 +6,10 @@ const logger = require("../utils/logger");
  * Called by the cron job from app.js once a day
  */
 async function run() {
-  logger.info("----- Running the X report -----");
+  logger.info(
+    `----- Running the X report for: ${await getXQueryRuntimeDttm()} -----`,
+  );
   try {
-    logger.info(await getXQueryRuntimeDttm());
     await postTweets();
   } catch (error) {
     error._location = "x/main.js -> run";

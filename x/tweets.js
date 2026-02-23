@@ -65,17 +65,24 @@ async function postTweets() {
       blocks.push(DIVIDER);
       blocks.push(await getHeaderBlock(index, tweet));
       blocks.push(await getBannerBlock(tweet));
-      if (!tweet.retweeted_tweet) {
-        blocks.push(await getBannerTweetBlock(tweet));
-        blocks.push(await getTextBlock(tweet));
-      }
       if (tweet.quoted_tweet) {
+        blocks.push(await getBannerTweetBlock(tweet));
+        blocks.push(await getRichTextBlock(tweet));
         blocks.push(await getBannerQuotedBlock(tweet.quoted_tweet));
         blocks.push(await getRichTextBlock(tweet.quoted_tweet));
-      }
-      if (tweet.retweeted_tweet) {
+      } else if (tweet.retweeted_tweet) {
+        // No need to show the tweet text if there is an article.
         blocks.push(await getBannerRetweetedBlock(tweet.retweeted_tweet));
         blocks.push(await getRichTextBlock(tweet.retweeted_tweet));
+      } else if (tweet.article) {
+        // No need to show the tweet text if there is an article.
+        blocks.push(await getBannerArticleBlock(tweet));
+        tweet.text = `${tweet.article.preview_text}\n\nFull article content is not included here. Please view the full article on X/Twitter by clicking the link above.`;
+        blocks.push(await getRichTextBlock(tweet));
+      } else {
+        // Normal tweet with no quoted or retweeted tweets or article
+        blocks.push(await getBannerTweetBlock(tweet));
+        blocks.push(await getTextBlock(tweet));
       }
 
       // Send message to Slack into the thread of the root message
@@ -163,14 +170,6 @@ async function getBannerBlock(tweet) {
  * @returns
  */
 async function getTextBlock(tweet) {
-  // Block with the tweet data
-  /*const block = {
-    type: "section",
-    text: {
-      type: "mrkdwn",
-      text: `*|* Tweet:\n${tweet.text}`,
-    },
-  };*/
   const block = {
     type: "rich_text",
     elements: [
@@ -209,7 +208,7 @@ async function getBannerTweetBlock(tweet) {
     elements: [
       {
         type: "mrkdwn",
-        text: "*|* Tweeted: ",
+        text: "*Tweeted*",
       },
     ],
   };
@@ -227,7 +226,7 @@ async function getBannerQuotedBlock(tweet) {
     elements: [
       {
         type: "mrkdwn",
-        text: "*|* Quoted: ",
+        text: "*Quoted:* ",
       },
       {
         type: "image",
@@ -255,7 +254,35 @@ async function getBannerRetweetedBlock(tweet) {
     elements: [
       {
         type: "mrkdwn",
-        text: "*|* Reposted: ",
+        text: "*Reposted:* ",
+      },
+      {
+        type: "image",
+        image_url: `${tweet.author.profilePicture}`,
+        alt_text: "author",
+      },
+      {
+        type: "plain_text",
+        text: `${tweet.author.name} @${tweet.author.userName} `,
+        emoji: true,
+      },
+    ],
+  };
+  return block;
+}
+
+/**
+ * The banner block for retweeted tweets, image and name/username
+ * @param {*} tweet
+ * @returns
+ */
+async function getBannerArticleBlock(tweet) {
+  const block = {
+    type: "context",
+    elements: [
+      {
+        type: "mrkdwn",
+        text: "*Article:* ",
       },
       {
         type: "image",
