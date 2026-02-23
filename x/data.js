@@ -21,11 +21,30 @@ async function getData() {
     for (const query of QUERIES) {
       await runQuery(query);
     }
-    logger.info(`DATA.length: ${DATA.length}`);
+    logger.info(`Tweets found: ${DATA.length}`);
     // Save DATA only for development
     if (process.env.NODE_ENV === "development") {
       fs.writeFileSync("../../tweets.json", JSON.stringify(DATA, null, 5));
     }
+
+    ///////////////////////////////////////
+    /*const response = await fetch(
+      `https://api.twitterapi.io/twitter/tweet/advanced_search?queryType=Latest&query=from:@wkande`,
+      {
+        method: "GET",
+        headers: {
+          "X-API-Key": CONFIG.x.twitter_api_io_key,
+          "Content-Type": "application/json",
+        },
+      },
+    );
+    const wkandeTweets = await response.json();
+    console.log(wkandeTweets);
+    wkandeTweets.tweets.forEach((tweet) => {
+      DATA.push(tweet);
+    });*/
+    //////////////////////////////
+
     return DATA;
   } catch (error) {
     error._location = "x/data.js -> getData";
@@ -39,18 +58,14 @@ async function getData() {
  * @param {*} query
  */
 async function runQuery(queryStr, next_cursor = undefined) {
-  logger.info("----- getData()");
-
   try {
     // Set the query (filters)
     let query = `&query=${queryStr} since:${await getXQueryStartDttm()} until:${await getXQueryEndDttm()}`;
 
     // Pagination
-    logger.info(`>>> next_cursor: ${next_cursor}`);
     if (next_cursor !== undefined) {
       query += `&cursor=${next_cursor}`;
     }
-    logger.info(`>>> Query str: ${query}`);
     const response = await fetch(
       `https://api.twitterapi.io/twitter/tweet/advanced_search?queryType=Latest${query}`,
       {
@@ -71,10 +86,16 @@ async function runQuery(queryStr, next_cursor = undefined) {
       const e = new Error(JSON.stringify(responseJson, null, 3));
       throw new Error(e);
     } else {
-      logger.info(`Tweets cnt: ${responseJson.tweets.length}`);
+      const author = query.split(" ")[0].split(":")[1];
+      logger.info(
+        `>>> ${author} >>> next_cursor: ${next_cursor} >>> cnt: ${responseJson.tweets.length}`,
+      );
       for (const tweet of responseJson.tweets) {
         tweet._timeUtc = `${tweet.createdAt.split(" ")[3]} (UTC)`;
-        DATA.push(tweet);
+        // Sometime twitterapi.io add tweets outside of the author.username filter. So we need to filter them out manually.
+        if (`@${tweet.author.userName}` === author) {
+          DATA.push(tweet);
+        }
       }
     }
 
