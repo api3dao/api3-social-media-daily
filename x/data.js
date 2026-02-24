@@ -22,10 +22,6 @@ async function getData() {
       await runQuery(query);
     }
     logger.info(`Tweets found: ${DATA.length}`);
-    // Save DATA only for development
-    if (process.env.NODE_ENV === "development") {
-      fs.writeFileSync("../../tweets.json", JSON.stringify(DATA, null, 5));
-    }
 
     ///////////////////////////////////////
     /*const response = await fetch(
@@ -39,11 +35,15 @@ async function getData() {
       },
     );
     const wkandeTweets = await response.json();
-    console.log(wkandeTweets);
     wkandeTweets.tweets.forEach((tweet) => {
       DATA.push(tweet);
     });*/
     //////////////////////////////
+
+    // Save DATA only for development, for debugging purposes.
+    if (process.env.NODE_ENV === "development") {
+      fs.writeFileSync("../../tweets.json", JSON.stringify(DATA, null, 5));
+    }
 
     return DATA;
   } catch (error) {
@@ -107,6 +107,7 @@ async function runQuery(queryStr, next_cursor = undefined) {
     ) {
       await runQuery(queryStr, responseJson.next_cursor);
     }
+
     // Sort the array by the _timeUtc key
     DATA.sort((a, b) => {
       return b._timeUtc.localeCompare(a._timeUtc);
