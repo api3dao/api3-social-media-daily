@@ -2,6 +2,7 @@ const { WebClient } = require("@slack/web-api");
 const { getXQueryRuntimeDttm } = require("../utils/utc");
 
 const { getData } = require("./data");
+const { postChannelTwitterPosts } = require("./xPost");
 const fs = require("fs");
 const CONFIG = JSON.parse(fs.readFileSync("./config.json", "utf-8"))[
   process.env.NODE_ENV
@@ -135,6 +136,11 @@ async function postTweets() {
           unfurl_media: false,
           blocks,
         });
+
+        // Send a message to the Discord channel twitter-posts if the author is Api3Dao
+        if (tweet.author.userName === "Api3Dao") {
+          await postChannelTwitterPosts(tweet);
+        }
 
         await sleep(500); // Pause for 1/2 second, Slack rate limit
       } catch (error) {
