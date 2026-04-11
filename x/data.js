@@ -60,7 +60,9 @@ async function getData() {
 async function runQuery(queryStr, next_cursor = undefined) {
   try {
     // Set the query (filters)
-    let query = `&query=${queryStr} since:${await getXQueryStartDttm()} until:${await getXQueryEndDttm()}`;
+    let query = `&query=${queryStr} since:${await getXQueryStartDttm()}`;
+    // The end DTTM was removed as twitterapi.io seems to fail now with it. It had run fine for a few months before.
+    // let query = `&query=${queryStr} since:${await getXQueryStartDttm()} until:${await getXQueryEndDttm()}`;
 
     // Pagination
     if (next_cursor !== undefined) {
@@ -99,14 +101,15 @@ async function runQuery(queryStr, next_cursor = undefined) {
       }
     }
 
+    // 2026-Apr wkande: Ff they have more than 20 tweets it is not worth the excess chit chat
     // If there where 20 messages (API limit) for the query get the next 20.
-    if (
+    /*if (
       responseJson.has_next_page &&
       responseJson.tweets &&
       responseJson.tweets.length > 19
     ) {
       await runQuery(queryStr, responseJson.next_cursor);
-    }
+    }*/
 
     // Sort the array by the _timeUtc key
     DATA.sort((a, b) => {
