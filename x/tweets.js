@@ -138,7 +138,7 @@ async function postTweets() {
         });
 
         // Send a message to the Discord channel twitter-posts if the author is Api3Dao
-        if (tweet.author.userName === "Api3Dao") {
+        if (tweet.author.userName === "Api3DAO") {
           await postChannelTwitterPosts(tweet);
         }
 
